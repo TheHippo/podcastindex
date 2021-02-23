@@ -15,10 +15,3 @@ func addClean(clean bool) string {
 	}
 	return ""
 }
-
-func addFullText(fullText bool) string {
-	if fullText {
-		return "&fulltext"
-	}
-	return ""
-}
