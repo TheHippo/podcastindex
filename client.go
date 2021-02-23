@@ -1,0 +1,74 @@
+package podcastindex
+
+import (
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"time"
+)
+
+// Config holds the configuration for the API client
+type Config struct {
+	BaseURL     string
+	UserAgent   string
+	HTTPTimeout time.Duration
+}
+
+// DefaultConfig is used when NewClient is used to create an API client
+var DefaultConfig *Config = &Config{
+	BaseURL:     BaseURL,
+	UserAgent:   UserAgent,
+	HTTPTimeout: 30 * time.Second,
+}
+
+// Client connects to the podcastindex API
+type Client struct {
+	config *Config
+	client *http.Client
+	key    string
+	secret string
+}
+
+// NewClient creates an API client with the default configuration
+func NewClient(apiKey, apiSecret string) *Client {
+	return NewClientWithConfig(apiKey, apiSecret, *DefaultConfig)
+}
+
+// NewClientWithConfig creates an API client with an custom configuration
+func NewClientWithConfig(apiKey, apiSecret string, config Config) *Client {
+	return &Client{
+		key:    apiKey,
+		secret: apiSecret,
+		config: &config,
+		client: &http.Client{
+			Timeout: config.HTTPTimeout,
+		},
+	}
+}
+
+func (c *Client) request(url string) ([]byte, error) {
+	u := fmt.Sprintf("%s%s", c.config.BaseURL, url)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	now := time.Now()
+	auth := generateAuthorizationHeader(c.key, c.secret, now)
+	req.Header.Set("User-Agent", c.config.UserAgent)
+	req.Header.Set("X-Auth-Date", fmt.Sprintf("%d", now.Unix()))
+	req.Header.Set("X-Auth-Key", c.key)
+	req.Header.Set("Authorization", auth)
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+	if res.Body == nil {
+		return nil, errors.New("API didn't returned a response")
+	}
+	return ioutil.ReadAll(res.Body)
+}
