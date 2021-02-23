@@ -195,6 +195,20 @@ func (c *Client) RecentPodcasts(languages, categories, notCategories []string, m
 		return nil, err
 	}
 	if result.Status == "false" {
+		return nil, errors.New("Could not find the recently updated podcasts")
+	}
+	return result.Feeds, err
+}
+
+// NewPodcasts return up to 1000 podcasts that have been added to the database over the last week
+func (c *Client) NewPodcasts() ([]*NewPodcast, error) {
+	url := fmt.Sprintf("recent/newfeeds")
+	result := &newPodcastResponse{}
+	err := c.request(url, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Status == "false" {
 		return nil, errors.New("Could not find the newest podcasts")
 	}
 	return result.Feeds, err

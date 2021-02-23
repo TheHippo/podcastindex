@@ -116,3 +116,21 @@ type RecentPodcast struct {
 	ItunesID              int    `json:"itunesId"`
 	Language              string `json:"language"`
 }
+
+type newPodcastResponse struct {
+	Status      string        `json:"status"`
+	Feeds       []*NewPodcast `json:"feeds"`
+	Count       int           `json:"count"`
+	Max         string        `json:"max"`
+	Description string        `json:"description"`
+}
+
+// NewPodcast contains data for a newly added podcast
+type NewPodcast struct {
+	ID          int    `json:"id"`
+	URL         string `json:"url"`
+	TimeAdded   Time   `json:"timeAdded"`
+	Status      string `json:"status"`
+	ContentHash string `json:"contentHash"`
+	Language    string `json:"language"`
+}
