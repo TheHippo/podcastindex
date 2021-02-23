@@ -179,3 +179,18 @@ func (c *Client) RandomEpisodes(languages, categories, notCategories []string, m
 	}
 	return result.Items, nil
 }
+
+// RecentEpisodes returns the last episodes across the entire database
+//
+// - before = only return episodes that are older than the episode with this id. set to zero
+// to ignore
+//
+// - excludeString = exclude episodes with this string in title or url. Leave empty for no
+// filter
+//
+// - max = number of episodes to return, if max is 0 the default number of episodes will be
+// returned, the default is 10
+func (c *Client) RecentEpisodes(before uint, max uint, exclude string) ([]*Episode, error) {
+	url := fmt.Sprintf("recent/episodes?fulltext%s%s%s", addMax(max), addExclude(exclude), addBefore(before))
+	return c.getEpisodes(url, errors.New("Could not get recent episodes"))
+}

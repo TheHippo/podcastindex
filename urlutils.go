@@ -13,6 +13,20 @@ func addMax(max uint) string {
 	return ""
 }
 
+func addBefore(before uint) string {
+	if before != 0 {
+		return fmt.Sprintf("&before=%d", before)
+	}
+	return ""
+}
+
+func addExclude(exclude string) string {
+	if len(exclude) != 0 {
+		return fmt.Sprintf("&excludeString=%s", exclude)
+	}
+	return ""
+}
+
 func addClean(clean bool) string {
 	if clean {
 		return "&clean"
