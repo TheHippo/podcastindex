@@ -10,16 +10,14 @@ import (
 
 // Config holds the configuration for the API client
 type Config struct {
-	BaseURL     string
-	UserAgent   string
-	HTTPTimeout time.Duration
+	BaseURL   string
+	UserAgent string
 }
 
 // DefaultConfig is used when NewClient is used to create an API client
 var DefaultConfig *Config = &Config{
-	BaseURL:     BaseURL,
-	UserAgent:   UserAgent,
-	HTTPTimeout: 30 * time.Second,
+	BaseURL:   BaseURL,
+	UserAgent: UserAgent,
 }
 
 // Client connects to the podcastindex API
@@ -32,18 +30,16 @@ type Client struct {
 
 // NewClient creates an API client with the default configuration
 func NewClient(apiKey, apiSecret string) *Client {
-	return NewClientWithConfig(apiKey, apiSecret, *DefaultConfig)
+	return NewClientWithConfig(apiKey, apiSecret, *DefaultConfig, http.DefaultClient)
 }
 
 // NewClientWithConfig creates an API client with an custom configuration
-func NewClientWithConfig(apiKey, apiSecret string, config Config) *Client {
+func NewClientWithConfig(apiKey, apiSecret string, config Config, client *http.Client) *Client {
 	return &Client{
 		key:    apiKey,
 		secret: apiSecret,
 		config: &config,
-		client: &http.Client{
-			Timeout: config.HTTPTimeout,
-		},
+		client: client,
 	}
 }
 
