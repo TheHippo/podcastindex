@@ -194,3 +194,39 @@ func (c *Client) RecentEpisodes(before uint, max uint, exclude string) ([]*Episo
 	url := fmt.Sprintf("recent/episodes?fulltext%s%s%s", addMax(max), addExclude(exclude), addBefore(before))
 	return c.getEpisodes(url, errors.New("Could not get recent episodes"))
 }
+
+// RecentPodcasts returns the last updated podcasts
+//
+// - languages = the languages the podcast should be in. "unknown" for when the language is not known.
+// Leave empty if languages does not matter
+//
+// - categories = name of the category or categories the podcast should be in.
+// Leave empty if categories do not matter
+//
+// - notCategories = name of the category or categories the podcast should not be in.
+// Leave empty if categories do not matter
+//
+// - max = number of podcasts to return, if max is 0 the default number of episodes will be
+// returned, the default is 40
+//
+// - since = only return episodes since that time. Set time to zero to not filter
+// by time
+func (c *Client) RecentPodcasts(languages, categories, notCategories []string, max uint, since time.Time) ([]*RecentPodcast, error) {
+	url := fmt.Sprintf("recent/feeds?fulltext%s%s%s%s%s",
+		addMax(max), addFilter("lang", languages), addFilter("cat", categories),
+		addFilter("notcat", notCategories), addTime(since),
+	)
+	res, err := c.request(url)
+	if err != nil {
+		return nil, err
+	}
+	result := &recentPodcastsResponse{}
+	err = decode(res, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Status == "false" {
+		return nil, errors.New("Could not find the newest podcasts")
+	}
+	return result.Feeds, err
+}

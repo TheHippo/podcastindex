@@ -94,3 +94,25 @@ type Episode struct {
 	ChaptersURL     string   `json:"chaptersUrl"`
 	TranscriptURL   string   `json:"transcriptUrl"`
 }
+
+type recentPodcastsResponse struct {
+	Status      string           `json:"status"`
+	Feeds       []*RecentPodcast `json:"feeds"`
+	Count       int              `json:"count"`
+	Max         interface{}      `json:"max"`
+	Since       interface{}      `json:"since"`
+	Description string           `json:"description"`
+}
+
+// RecentPodcast contains all information about an recently
+// updated podcast
+type RecentPodcast struct {
+	ID                    int    `json:"id"`
+	URL                   string `json:"url"`
+	Title                 string `json:"title"`
+	NewestItemPublishTime Time   `json:"newestItemPublishTime"`
+	Description           string `json:"description"`
+	Image                 string `json:"image"`
+	ItunesID              int    `json:"itunesId"`
+	Language              string `json:"language"`
+}
