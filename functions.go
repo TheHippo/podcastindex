@@ -20,7 +20,9 @@ func (c *Client) Search(term string) ([]*Podcast, error) {
 // SearchC for searching with more options than Search
 //
 // - clean for non explicit feeds according to itunes:explicit
+//
 // - fullBody to return the more then 100 characters in the descriptions
+//
 // - max for the number of results, when set to 0 it uses the API default
 func (c *Client) SearchC(term string, clean bool, max uint) ([]*Podcast, error) {
 	url := fmt.Sprintf("search/byterm?q=\"%s\"&fulltext%s%s", term, addClean(clean), addMax(max))
