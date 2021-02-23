@@ -1,17 +1,10 @@
 package podcastindex
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 )
-
-func decode(in []byte, out interface{}) error {
-	decoder := json.NewDecoder(bytes.NewReader(in))
-	return decoder.Decode(out)
-}
 
 // Search for podcasts, authors or owners
 func (c *Client) Search(term string) ([]*Podcast, error) {
@@ -27,12 +20,8 @@ func (c *Client) Search(term string) ([]*Podcast, error) {
 // - max for the number of results, when set to 0 it uses the API default
 func (c *Client) SearchC(term string, clean bool, max uint) ([]*Podcast, error) {
 	url := fmt.Sprintf("search/byterm?q=\"%s\"&fulltext%s%s", term, addClean(clean), addMax(max))
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &podcastsResult{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +32,8 @@ func (c *Client) SearchC(term string, clean bool, max uint) ([]*Podcast, error) 
 }
 
 func (c *Client) getPodcast(url string, notFound error) (*Podcast, error) {
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &podcastResult{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +64,8 @@ func (c *Client) PodcastByITunesID(id uint) (*Podcast, error) {
 }
 
 func (c *Client) getEpisodes(url string, notFound error) ([]*Episode, error) {
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &episodesResponse{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}
@@ -133,12 +114,8 @@ func (c *Client) EpisodesByITunesID(id uint, max uint, since time.Time) ([]*Epis
 // EpisodeByID return a single episode by its id
 func (c *Client) EpisodeByID(id uint) (*Episode, error) {
 	url := fmt.Sprintf("episodes/byid?id=%d&fulltext", id)
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &episodeResponse{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}
@@ -165,12 +142,8 @@ func (c *Client) EpisodeByID(id uint) (*Episode, error) {
 // returned, the default is 1
 func (c *Client) RandomEpisodes(languages, categories, notCategories []string, max uint) ([]*Episode, error) {
 	url := fmt.Sprintf("episodes/random?fulltext%s%s%s%s", addMax(max), addFilter("lang", languages), addFilter("cat", categories), addFilter("notcat", notCategories))
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &randomEpisodesResponse{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}
@@ -216,12 +189,8 @@ func (c *Client) RecentPodcasts(languages, categories, notCategories []string, m
 		addMax(max), addFilter("lang", languages), addFilter("cat", categories),
 		addFilter("notcat", notCategories), addTime(since),
 	)
-	res, err := c.request(url)
-	if err != nil {
-		return nil, err
-	}
 	result := &recentPodcastsResponse{}
-	err = decode(res, result)
+	err := c.request(url, result)
 	if err != nil {
 		return nil, err
 	}

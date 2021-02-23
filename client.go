@@ -1,6 +1,8 @@
 package podcastindex
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -43,11 +45,11 @@ func NewClientWithConfig(apiKey, apiSecret string, config Config, client *http.C
 	}
 }
 
-func (c *Client) request(url string) ([]byte, error) {
+func (c *Client) request(url string, result interface{}) error {
 	u := fmt.Sprintf("%s%s", c.config.BaseURL, url)
 	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	now := time.Now()
 	auth := generateAuthorizationHeader(c.key, c.secret, now)
@@ -58,13 +60,22 @@ func (c *Client) request(url string) ([]byte, error) {
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if res.Body != nil {
 		defer res.Body.Close()
 	}
 	if res.Body == nil {
-		return nil, errors.New("API didn't returned a response")
+		return errors.New("API didn't returned a response")
 	}
-	return ioutil.ReadAll(res.Body)
+	resBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+	return decode(resBody, result)
+}
+
+func decode(in []byte, out interface{}) error {
+	decoder := json.NewDecoder(bytes.NewReader(in))
+	return decoder.Decode(out)
 }
