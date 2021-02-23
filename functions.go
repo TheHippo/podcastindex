@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 )
 
 func decode(in []byte, out interface{}) error {
@@ -75,4 +76,56 @@ func (c *Client) PodcastByFeedID(id uint) (*Podcast, error) {
 func (c *Client) PodcastByITunesID(id uint) (*Podcast, error) {
 	url := fmt.Sprintf("podcasts/byitunesid?id=%d&fulltext", id)
 	return c.getPodcast(url, errors.New("Could not find a podcast for that iTunes id"))
+}
+
+func (c *Client) getEpisodes(url string, notFound error) ([]*Episode, error) {
+	res, err := c.request(url)
+	if err != nil {
+		return nil, err
+	}
+	result := &episodesResponse{}
+	err = decode(res, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Status == "false" {
+		return nil, notFound
+	}
+	return result.Items, nil
+}
+
+// EpisodesByFeedID returns episodes for a podcast by its id
+//
+// - max = number of episodes to return, if max is 0 the default number of episodes will be
+// returned
+//
+// - since = only return episodes since that time. Set time to zero to not filter
+// by time
+func (c *Client) EpisodesByFeedID(id uint, max uint, since time.Time) ([]*Episode, error) {
+	url := fmt.Sprintf("episodes/byfeedid?id=%d&fulltext%s%s", id, addMax(max), addTime(since))
+	return c.getEpisodes(url, errors.New("Could not get episodes by feed id"))
+}
+
+// EpisodesByFeedURL returns episodes for a podcast by its feed URL
+//
+// - max = number of episodes to return, if max is 0 the default number of episodes will be
+// returned
+//
+// - since = only return episodes since that time. Set time to zero to not filter
+// by time
+func (c *Client) EpisodesByFeedURL(feedURL string, max uint, since time.Time) ([]*Episode, error) {
+	url := fmt.Sprintf("episodes/byfeedurl?url=\"%s\"&fulltext%s%s", feedURL, addMax(max), addTime(since))
+	return c.getEpisodes(url, errors.New("Could not get episodes by feed URL"))
+}
+
+// EpisodesByITunesID returns episodes for a podcast by its iTunes id
+//
+// - max = number of episodes to return, if max is 0 the default number of episodes will be
+// returned
+//
+// - since = only return episodes since that time. Set time to zero to not filter
+// by time
+func (c *Client) EpisodesByITunesID(id uint, max uint, since time.Time) ([]*Episode, error) {
+	url := fmt.Sprintf("episodes/byitunesid?id=%d&fulltext%s%s", id, addMax(max), addTime(since))
+	return c.getEpisodes(url, errors.New("Could not get episodes by iTunes id"))
 }

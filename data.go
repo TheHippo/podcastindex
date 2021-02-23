@@ -1,6 +1,7 @@
 package podcastindex
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -29,6 +30,30 @@ func (t Time) String() string {
 	return time.Time(t).UTC().String()
 }
 
+// Duration is a crutch to get time.Duration parsed from the API
+// results
+type Duration time.Duration
+
+// MarshalJSON is used to convert the duration to JSON
+func (d Duration) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.FormatInt(int64(time.Duration(d).Seconds()), 10)), nil
+}
+
+// UnmarshalJSON is used to convert the duration from JSON
+func (d *Duration) UnmarshalJSON(s []byte) (err error) {
+	p, err := time.ParseDuration(fmt.Sprintf("%ss", s))
+	if err != nil {
+		return err
+	}
+	*(*time.Duration)(d) = p
+	return nil
+}
+
+// String returns d as a formated string
+func (d Duration) String() string {
+	return time.Duration(d).String()
+}
+
 type podcastsResult struct {
 	Status      string     `json:"status"`
 	Feeds       []*Podcast `json:"feeds"`
@@ -46,7 +71,7 @@ type podcastResult struct {
 	Description string  `json:"description"`
 }
 
-// Podcast contains all informations returned from the podcastindex API
+// Podcast contains all informations about a podcast returned from the podcastindex API
 type Podcast struct {
 	ID                     uint            `json:"id"`
 	Title                  string          `json:"title"`
@@ -72,4 +97,39 @@ type Podcast struct {
 	CrawlErrors            int             `json:"crawlErrors"`
 	ParseErrors            int             `json:"parseErrors"`
 	Categories             map[uint]string `json:"categories"`
+}
+
+type episodesResponse struct {
+	Status      string     `json:"status"`
+	Items       []*Episode `json:"items"`
+	Count       int        `json:"count"`
+	Query       string     `json:"query"`
+	Description string     `json:"description"`
+}
+
+// Episode contains all information about a single podcast episode returned from
+// the podcastindex API
+type Episode struct {
+	ID              int      `json:"id"`
+	Title           string   `json:"title"`
+	Link            string   `json:"link"`
+	Description     string   `json:"description"`
+	GUID            string   `json:"guid"`
+	DatePublished   Time     `json:"datePublished"`
+	DateCrawled     Time     `json:"dateCrawled"`
+	EnclosureURL    string   `json:"enclosureUrl"`
+	EnclosureType   string   `json:"enclosureType"`
+	EnclosureLength int      `json:"enclosureLength"`
+	Duration        Duration `json:"duration"`
+	Explicit        int      `json:"explicit"`
+	Episode         int      `json:"episode"`
+	EpisodeType     string   `json:"episodeType"`
+	Season          int      `json:"season"`
+	Image           string   `json:"image"`
+	FeedItunesID    int      `json:"feedItunesId"`
+	FeedImage       string   `json:"feedImage"`
+	FeedID          int      `json:"feedId"`
+	FeedLanguage    string   `json:"feedLanguage"`
+	ChaptersURL     string   `json:"chaptersUrl"`
+	TranscriptURL   string   `json:"transcriptUrl"`
 }

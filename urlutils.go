@@ -1,6 +1,9 @@
 package podcastindex
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func addMax(max uint) string {
 	if max != 0 {
@@ -14,4 +17,11 @@ func addClean(clean bool) string {
 		return "&clean"
 	}
 	return ""
+}
+
+func addTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return fmt.Sprintf("&since=%d", t.Unix())
 }
