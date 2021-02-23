@@ -107,6 +107,14 @@ type episodesResponse struct {
 	Description string     `json:"description"`
 }
 
+type randomEpisodesResponse struct {
+	Status      string     `json:"status"`
+	Items       []*Episode `json:"episodes"`
+	Count       int        `json:"count"`
+	Query       string     `json:"query"`
+	Description string     `json:"description"`
+}
+
 type episodeResponse struct {
 	Status      string   `json:"status"`
 	ID          string   `json:"id"`

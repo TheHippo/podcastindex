@@ -147,3 +147,35 @@ func (c *Client) EpisodeByID(id uint) (*Episode, error) {
 	}
 	return result.Episode, nil
 }
+
+// RandomEpisodes returns a random episode
+//
+// categories and notCategories can be combined
+//
+// - languages = the languages the episodes should be in. "unknown" for when the language is not known.
+// Leave empty if languages does not matter
+//
+// - categories = name of the category or categories the episodes should be in.
+// Leave empty if categories do not matter
+//
+// - notCategories = name of the category or categories the episodes should not be in.
+// Leave empty if categories do not matter
+//
+// - max = number of episodes to return, if max is 0 the default number of episodes will be
+// returned, the default is 1
+func (c *Client) RandomEpisodes(languages, categories, notCategories []string, max uint) ([]*Episode, error) {
+	url := fmt.Sprintf("episodes/random?fulltext%s%s%s%s", addMax(max), addFilter("lang", languages), addFilter("cat", categories), addFilter("notcat", notCategories))
+	res, err := c.request(url)
+	if err != nil {
+		return nil, err
+	}
+	result := &randomEpisodesResponse{}
+	err = decode(res, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Status == "false" {
+		return nil, errors.New("Could not get random episodes")
+	}
+	return result.Items, nil
+}
