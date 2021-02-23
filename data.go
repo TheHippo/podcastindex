@@ -107,6 +107,13 @@ type episodesResponse struct {
 	Description string     `json:"description"`
 }
 
+type episodeResponse struct {
+	Status      string   `json:"status"`
+	ID          string   `json:"id"`
+	Episode     *Episode `json:"episode"`
+	Description string   `json:"description"`
+}
+
 // Episode contains all information about a single podcast episode returned from
 // the podcastindex API
 type Episode struct {

@@ -129,3 +129,21 @@ func (c *Client) EpisodesByITunesID(id uint, max uint, since time.Time) ([]*Epis
 	url := fmt.Sprintf("episodes/byitunesid?id=%d&fulltext%s%s", id, addMax(max), addTime(since))
 	return c.getEpisodes(url, errors.New("Could not get episodes by iTunes id"))
 }
+
+// EpisodeByID return a single episode by its id
+func (c *Client) EpisodeByID(id uint) (*Episode, error) {
+	url := fmt.Sprintf("episodes/byid?id=%d&fulltext", id)
+	res, err := c.request(url)
+	if err != nil {
+		return nil, err
+	}
+	result := &episodeResponse{}
+	err = decode(res, result)
+	if err != nil {
+		return nil, err
+	}
+	if result.Status == "false" {
+		return nil, errors.New("Could not find episode")
+	}
+	return result.Episode, nil
+}
